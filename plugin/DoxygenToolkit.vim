@@ -312,6 +312,9 @@ endif
 if !exists("g:DoxygenToolkit_blockFooter")
   let g:DoxygenToolkit_blockFooter = ""
 endif
+if !exists("g:DoxygenToolkit_licenseFile")
+  let g:DoxygenToolkit_licenseFile = ""
+endif
 if !exists("g:DoxygenToolkit_licenseTag")
   let g:DoxygenToolkit_licenseTag = s:licenseTag
 endif
@@ -448,21 +451,35 @@ function! <SID>DoxygenLicenseFunc()
   if !exists("g:DoxygenToolkit_authorName")
     let g:DoxygenToolkit_authorName = input("Enter name of the author (generally yours...) : ")
   endif
-  mark d
   let l:date = strftime("%Y")
-  exec "normal O".strpart( s:startCommentBlock, 0, 1 )
-  exec "normal A".strpart( s:startCommentBlock, 1 ).substitute( g:DoxygenToolkit_licenseTag, "\<enter>", "\<enter>".s:interCommentBlock, "g" )
-  if( s:endCommentBlock != "" )
+  let l:filename = s:SearchForLicenseFile()
+  if ( l:filename != "" )
+    exec "normal O".s:startCommentBlock
+    for l:line in readfile(l:filename)
+      let l:str = l:line
+      let l:str = substitute( l:str, "\<YEAR>", l:date, "g" )
+      let l:str = substitute( l:str, "\<AUTHOR>", g:DoxygenToolkit_authorName, "g" )
+      if exists("g:DoxygenToolkit_authorMail")
+        let l:str = substitute( l:str, "\<MAIL>", "\<".g:DoxygenToolkit_authorMail.">", "g" )
+      endif
+      exec "normal o".s:interCommentBlock.l:str
+    endfor
     exec "normal o".s:endCommentBlock
+  else
+    mark d
+    exec "normal O".strpart( s:startCommentBlock, 0, 1 )
+    exec "normal A".strpart( s:startCommentBlock, 1 ).substitute( g:DoxygenToolkit_licenseTag, "\<enter>", "\<enter>".s:interCommentBlock, "g" )
+    if( s:endCommentBlock != "" )
+      exec "normal o".s:endCommentBlock
+    endif
+    if( g:DoxygenToolkit_licenseTag == s:licenseTag )
+      exec "normal %A".l:date." ".g:DoxygenToolkit_authorName
+    endif
+    exec "normal `d"
   endif
-  if( g:DoxygenToolkit_licenseTag == s:licenseTag )
-    exec "normal %jA".l:date." - ".g:DoxygenToolkit_authorName
-  endif
-  exec "normal `d"
 
   call s:RestoreParameters()
 endfunction
-
 
 """"""""""""""""""""""""""
 " Doxygen author comment
@@ -1139,6 +1156,23 @@ function! s:WarnMsg( msg )
   echo a:msg
   echohl None
   return
+endfunction
+
+"""""""""""""""""""""""""""""""""""
+" Search for license file from current file's directory along to root('/')
+"""""""""""""""""""""""""""""""""""
+function! s:SearchForLicenseFile()
+  if ( g:DoxygenToolkit_licenseFile != "" )
+    let l:path = expand("%:p:h")
+    while l:path != ""
+      let l:filename = l:path."/".g:DoxygenToolkit_licenseFile
+      if filereadable(l:filename)
+        return l:filename
+      endif
+      let l:path = substitute(l:path, "/[^/]*$", "", "")
+    endwhile
+  endif
+  return ""
 endfunction
 
 """"""""""""""""""""""""""

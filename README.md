@@ -228,3 +228,10 @@ void resize(size_type count, value_type val = 0){
 ```
 
 To find more configurations, see the `g:DoxygenToolkit_XXX` variables in the script's source. These variables can be set in `.vimrc`.
+
+# License
+This program is distributed under the **GNU General Public License**.
+
+Copyright (c) 2016 Zhao DAI.
+
+Many thanks to [@vim-scripts](https://github.com/vim-scripts) for his/her original work.

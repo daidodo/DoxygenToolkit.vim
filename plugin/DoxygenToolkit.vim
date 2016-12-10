@@ -318,6 +318,9 @@ endif
 if !exists("g:DoxygenToolkit_fileTag")
   let g:DoxygenToolkit_fileTag = "@file "
 endif
+if !exists("g:DoxygenToolkit_putFilename")
+  let g:DoxygenToolkit_putFilename = 0
+endif
 if !exists("g:DoxygenToolkit_authorTag")
   let g:DoxygenToolkit_authorTag = "@author "
 endif
@@ -477,12 +480,15 @@ function! <SID>DoxygenAuthorFunc()
     let g:DoxygenToolkit_versionString = input("Enter version string : ")
   endif
 
-  " Get file name
-  let l:fileName = expand('%:t')
-
   " Begin to write skeleton
   let l:insertionMode = s:StartDocumentationBlock()
-  exec "normal ".l:insertionMode.s:interCommentTag.g:DoxygenToolkit_fileTag.l:fileName
+  if ( g:DoxygenToolkit_putFilename == 0 )
+    exec "normal ".l:insertionMode.s:interCommentTag.g:DoxygenToolkit_fileTag
+  else
+    " Get file name
+    let l:fileName = expand('%:t')
+    exec "normal ".l:insertionMode.s:interCommentTag.g:DoxygenToolkit_fileTag.l:fileName
+  endif
   exec "normal o".s:interCommentTag.g:DoxygenToolkit_briefTag_pre
   mark d
   exec "normal o".s:interCommentTag.g:DoxygenToolkit_authorTag.g:DoxygenToolkit_authorName

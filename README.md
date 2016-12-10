@@ -234,4 +234,4 @@ This program is distributed under the **GNU General Public License**.
 
 Copyright (c) 2016 Zhao DAI.
 
-Many thanks to [@vim-scripts](https://github.com/vim-scripts) for his/her original work.
+Many thanks to [Mathias Lorente](http://www.vim.org/account/profile.php?user_id=5172) for his/her original work.

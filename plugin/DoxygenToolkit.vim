@@ -265,20 +265,23 @@
 "endif
 let loaded_DoxygenToolkit = 1
 "echo 'Loading DoxygenToolkit...'
-let s:licenseTag = "Copyright (C) \<enter>\<enter>"
-let s:licenseTag = s:licenseTag . "This program is free software; you can redistribute it and/or\<enter>"
-let s:licenseTag = s:licenseTag . "modify it under the terms of the GNU General Public License\<enter>"
-let s:licenseTag = s:licenseTag . "as published by the Free Software Foundation; either version 2\<enter>"
-let s:licenseTag = s:licenseTag . "of the License, or (at your option) any later version.\<enter>\<enter>"
-let s:licenseTag = s:licenseTag . "This program is distributed in the hope that it will be useful,\<enter>"
-let s:licenseTag = s:licenseTag . "but WITHOUT ANY WARRANTY; without even the implied warranty of\<enter>"
-let s:licenseTag = s:licenseTag . "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\<enter>"
-let s:licenseTag = s:licenseTag . "GNU General Public License for more details.\<enter>\<enter>"
-let s:licenseTag = s:licenseTag . "You should have received a copy of the GNU General Public License\<enter>"
-let s:licenseTag = s:licenseTag . "along with this program; if not, write to the Free Software\<enter>"
-let s:licenseTag = s:licenseTag . "Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.\<enter>"
+let s:licenseTag = "Copyright (c) <YEAR> <AUTHOR> <MAIL><N><N>"
+let s:licenseTag.= "This program is free software: you can redistribute it and/or modify<N>"
+let s:licenseTag.= "it under the terms of the GNU General Public License as published by<N>"
+let s:licenseTag.= "the Free Software Foundation, either version 3 of the License, or any<N>"
+let s:licenseTag.= "later version.<N><N>"
+let s:licenseTag.= "This program is distributed in the hope that it will be useful,<N>"
+let s:licenseTag.= "but WITHOUT ANY WARRANTY; without even the implied warranty of<N>"
+let s:licenseTag.= "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the<N>"
+let s:licenseTag.= "GNU General Public License for more details.<N><N>"
+let s:licenseTag.= "You should have received a copy of the GNU General Public License<N>"
+let s:licenseTag.= "along with this program.  If not, see accompanying file LICENSE.txt<N>"
+let s:licenseTag.= "or <http://www.gnu.org/licenses/>."
 
 " Common standard constants
+" g:DoxygenToolkit_authorName
+" g:DoxygenToolkit_authorMail
+" g:DoxygenToolkit_versionString
 if !exists("g:DoxygenToolkit_briefTag_pre")
   let g:DoxygenToolkit_briefTag_pre = "@brief "
 endif
@@ -390,7 +393,7 @@ endif
 "  * \return                 */
 "  */
 if !exists("g:DoxygenToolkit_compactDoc")
-  let g:DoxygenToolkit_compactDoc = "no"
+  let g:DoxygenToolkit_compactDoc = "yes"
 endif
 
 " Necessary '\<' and '\>' will be added to each item of the list.
@@ -447,36 +450,20 @@ endif
 function! <SID>DoxygenLicenseFunc()
   call s:InitializeParameters()
 
-  " Test authorName variable
-  if !exists("g:DoxygenToolkit_authorName")
-    let g:DoxygenToolkit_authorName = input("Enter name of the author (generally yours...) : ")
-  endif
-  let l:date = strftime("%Y")
   let l:filename = s:SearchForLicenseFile()
-  if ( l:filename != "" )
-    exec "normal O".s:startCommentBlock
-    for l:line in readfile(l:filename)
-      let l:str = l:line
-      let l:str = substitute( l:str, "\<YEAR>", l:date, "g" )
-      let l:str = substitute( l:str, "\<AUTHOR>", g:DoxygenToolkit_authorName, "g" )
-      if exists("g:DoxygenToolkit_authorMail")
-        let l:str = substitute( l:str, "\<MAIL>", "\<".g:DoxygenToolkit_authorMail.">", "g" )
-      endif
-      exec "normal o".s:interCommentBlock.l:str
+  mark d
+  exec "normal O".s:startCommentBlock
+  if l:filename != ""
+    for l:str in readfile(l:filename)
+      exec "normal o".s:interCommentBlock.s:LicenseTextSubstitution(l:str)
     endfor
-    exec "normal o".s:endCommentBlock
   else
-    mark d
-    exec "normal O".strpart( s:startCommentBlock, 0, 1 )
-    exec "normal A".strpart( s:startCommentBlock, 1 ).substitute( g:DoxygenToolkit_licenseTag, "\<enter>", "\<enter>".s:interCommentBlock, "g" )
-    if( s:endCommentBlock != "" )
-      exec "normal o".s:endCommentBlock
-    endif
-    if( g:DoxygenToolkit_licenseTag == s:licenseTag )
-      exec "normal %A".l:date." ".g:DoxygenToolkit_authorName
-    endif
-    exec "normal `d"
+    exec "normal o".s:interCommentBlock.s:LicenseTextSubstitution(g:DoxygenToolkit_licenseTag)
   endif
+  if s:endCommentBlock != ""
+    exec "normal o".s:endCommentBlock
+  endif
+  exec "normal `d"
 
   call s:RestoreParameters()
 endfunction
@@ -487,40 +474,34 @@ endfunction
 function! <SID>DoxygenAuthorFunc()
   call s:InitializeParameters()
 
-  " Test authorName variable
-  if !exists("g:DoxygenToolkit_authorName")
-    let g:DoxygenToolkit_authorName = input("Enter name of the author (generally yours...) : ")
+  let l:authorName = ""
+  if exists("g:DoxygenToolkit_authorName")
+    let l:authorName = g:DoxygenToolkit_authorName
   endif
-
-  " Test versionString variable
-  if !exists("g:DoxygenToolkit_versionString")
-    let g:DoxygenToolkit_versionString = input("Enter version string : ")
+  if l:authorName == ""
+    let l:authorName = "<AUTHOR>"
   endif
-
   " Begin to write skeleton
   let l:insertionMode = s:StartDocumentationBlock()
-  if ( g:DoxygenToolkit_putFilename == 0 )
-    exec "normal ".l:insertionMode.s:interCommentTag.g:DoxygenToolkit_fileTag
+  if g:DoxygenToolkit_putFilename
+    exec "normal ".l:insertionMode.s:interCommentTag.g:DoxygenToolkit_fileTag.expand('%:t')
   else
-    " Get file name
-    let l:fileName = expand('%:t')
-    exec "normal ".l:insertionMode.s:interCommentTag.g:DoxygenToolkit_fileTag.l:fileName
+    exec "normal ".l:insertionMode.s:interCommentTag.g:DoxygenToolkit_fileTag
   endif
   exec "normal o".s:interCommentTag.g:DoxygenToolkit_briefTag_pre
   mark d
-  exec "normal o".s:interCommentTag.g:DoxygenToolkit_authorTag.g:DoxygenToolkit_authorName
-  exec "normal o".s:interCommentTag.g:DoxygenToolkit_versionTag.g:DoxygenToolkit_versionString
-  let l:date = strftime("%Y-%m-%d")
-  exec "normal o".s:interCommentTag.g:DoxygenToolkit_dateTag.l:date
-  if ( g:DoxygenToolkit_endCommentTag != "" )
+  exec "normal o".s:interCommentTag.g:DoxygenToolkit_authorTag.l:authorName
+  if exists("g:DoxygenToolkit_versionString")
+    exec "normal o".s:interCommentTag.g:DoxygenToolkit_versionTag.g:DoxygenToolkit_versionString
+  endif
+  exec "normal o".s:interCommentTag.g:DoxygenToolkit_dateTag.strftime("%Y-%m-%d")
+  if g:DoxygenToolkit_endCommentTag != ""
     exec "normal o".s:endCommentTag
   endif
-
-  " Move the cursor to the rigth position
   exec "normal `d"
+  startinsert!
 
   call s:RestoreParameters()
-  startinsert!
 endfunction
 
 
@@ -1162,7 +1143,7 @@ endfunction
 " Search for license file from current file's directory along to root('/')
 """""""""""""""""""""""""""""""""""
 function! s:SearchForLicenseFile()
-  if ( g:DoxygenToolkit_licenseFile != "" )
+  if g:DoxygenToolkit_licenseFile != ""
     let l:path = expand("%:p:h")
     while l:path != ""
       let l:filename = l:path."/".g:DoxygenToolkit_licenseFile
@@ -1174,6 +1155,32 @@ function! s:SearchForLicenseFile()
   endif
   return ""
 endfunction
+
+
+"""""""""""""""""""""""""""""""""""
+" Substitute macros in license text
+"""""""""""""""""""""""""""""""""""
+function! s:LicenseTextSubstitution(text)
+  let l:date = strftime("%Y")
+  let l:authorName = ""
+  if exists("g:DoxygenToolkit_authorName")
+    let l:authorName = g:DoxygenToolkit_authorName
+  endif
+  let l:authorMail = ""
+  if exists("g:DoxygenToolkit_authorMail")
+    let l:authorMail = g:DoxygenToolkit_authorMail
+  endif
+  let l:str = substitute(a:text, "\<YEAR>", l:date, "g")
+  let l:str = substitute(l:str, "\<N>", "\<CR>".s:interCommentBlock, "g")
+  if l:authorName != ""
+    let l:str = substitute(l:str, "\<AUTHOR>", l:authorName, "g")
+  endif
+  if l:authorMail != ""
+    let l:str = substitute(l:str, "\<MAIL>", "\<".l:authorMail.">", "g")
+  endif
+  return l:str
+endfunction
+
 
 """"""""""""""""""""""""""
 " Shortcuts...

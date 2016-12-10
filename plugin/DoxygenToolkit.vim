@@ -425,7 +425,7 @@ endif
 
 " PYTHON specific
 """""""""""""""""
-" Remove automatically self parameter from function to avoid its documantation
+" Remove automatically self parameter from function to avoid its documentation
 if !exists("g:DoxygenToolkit_python_autoRemoveSelfParam")
   let g:DoxygenToolkit_python_autoRemoveSelfParam = "yes"
 endif

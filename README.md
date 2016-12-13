@@ -39,7 +39,7 @@ This plugin follows the standard runtime path structure, and as such it can be i
 ## `:Dox`
 Generate *doxygen* comment skeleton for a class or function in the current line or after.
 * Function:
-```
+```{.cpp}
 /**
  * @brief
  * @param key
@@ -50,7 +50,7 @@ Generate *doxygen* comment skeleton for a class or function in the current line 
 bool insert(const key_type & key, const char * value, size_t len){
 ```
 * Class
-```
+```{.cpp}
 /**
  * @brief
  * @tparam Key
@@ -65,19 +65,19 @@ template<
 {
 ```
 * Struct, Namespace, Variable, etc.
-```
+```{.cpp}
 /**
  * @brief
  */
 struct Object {
 ```
-```
+```{.cpp}
 /**
  * @brief
  */
 namespace marine {
 ```
-```
+```{.cpp}
 /**
  * @brief
  */
@@ -89,7 +89,9 @@ Place a license statement in the place of cursor.
 
 ### Statement text
 The statement text is from a license file. The file, with its name defined by `g:DoxygenToolkit_licenseFile`, is located in current editing file's directory, or its parent directory, or any directory along to the root (`/`), .
+
 If `g:DoxygenToolkit_licenseFile` is not defined, or no such file found, text defined by `g:DoxygenToolkit_licenseTag` will be used.
+
 If `g:DoxygenToolkit_licenseTag` is not defined either, an internal statement will be placed.
 
 ### Predefined macros
@@ -101,8 +103,9 @@ There are several predefined macros that could show up in the statement text:
 
 ## `:DoxAuthor`
 Generate `@file` and `@author` comment skeleton in current line.
+
 Example:
-```
+```{.cpp}
 /**
  * @file
  * @brief
@@ -112,13 +115,16 @@ Example:
  */
 ```
 If you want to add current file name after `@file` (which *doxygen* can deduce by itself), you could set `DoxygenToolkit_putFilename = 1`.
+
 If `g:DoxygenToolkit_authorName` is not defined, you will see `@author <AUTHOR>` instead.
+
 Version string could be defined by `g:DoxygenToolkit_versionString`. If not set, `@version` information will not be placed.
 
 ## `:DoxBlock`
 Insert a *doxygen* block on the current line.
+
 Example:
-```
+```{.cpp}
 /**
  * @name
  * @{ */
@@ -127,57 +133,85 @@ Example:
 # Configuration
 There are a bunch of variables you can customize.
 
-### `g:DoxygenToolkit_authorName = ""`
+### `g:DoxygenToolkit_authorName=""`
 Defines author's name.
-If not set, `<AUTHOR>` will appear in the output comments wherever needed.
-Example:
-`:let g:DoxygenToolkit_authorName = "Daidodo"`
 
-### `g:DoxygenToolkit_authorMail = ""`
-Defines author's email address.
-If not set, `<MAIL>` macro in license text will not be substituted.
+If not set, `<AUTHOR>` will appear in the output comments wherever needed.
+
 Example:
-`:let g:DoxygenToolkit_authorMail = "daidodo@gmail.com"`
+```{.vim}
+:let g:DoxygenToolkit_authorName="Daidodo"
+```
+
+### `g:DoxygenToolkit_authorMail=""`
+Defines author's email address.
+
+If not set, `<MAIL>` macro in license text will not be substituted.
+
+Example:
+```{.vim}
+:let g:DoxygenToolkit_authorMail="daidodo@gmail.com"
+```
 then `"Text with <MAIL>."` with be replaced by `"Text with <daidodo@gmail.com>."`.
 
-### `g:DoxygenToolkit_licenseFile = ""`
+### `g:DoxygenToolkit_licenseFile=""`
 Defines license file name.
-When executing command `:DoxLic`, *DoxygenToolkit* will try to locate a license file in current editing file's directory, then in its parent directory, and so on to the root (`/`). If any file is found, the content will be placed as license statement comment into the editing file.
-Example:
-`:let g:DoxygenToolkit_licenseFile = "COPYING"`
 
-### `g:DoxygenToolkit_licenseTag = ""`
-Defines license statement text.
-When executing command `:DoxLic`, if no license file was found, the content of this variable will be placed as license statement comment into the editing file.
-If not set, an internal license statement will appear instead.
+When executing command `:DoxLic`, *DoxygenToolkit* will try to locate a license file in current editing file's directory, then in its parent directory, and so on to the root (`/`). If any file is found, the content will be placed as license statement comment into the editing file.
+
 Example:
+```{.vim}
+:let g:DoxygenToolkit_licenseFile="COPYING"
 ```
-let g:DoxygenToolkit_licenseTag = "Copyright (c) <YEAR> <AUTHOR> <MAIL><N><N>"
-let g:DoxygenToolkit_licenseTag.= "This program is free software: you can redistribute it and/or modify<N>"
-let g:DoxygenToolkit_licenseTag.= "it under the terms of the GNU General Public License as published by<N>"
+
+### `g:DoxygenToolkit_licenseTag=""`
+Defines license statement text.
+
+When executing command `:DoxLic`, if no license file was found, the content of this variable will be placed as license statement comment into the editing file.
+
+If not set, an internal license statement will appear instead.
+
+Example:
+```{.vim}
+let g:DoxygenToolkit_licenseTag="Copyright (c) <YEAR> <AUTHOR> <MAIL><N><N>"
+let g:DoxygenToolkit_licenseTag.="This program is free software: you can redistribute it and/or modify<N>"
+let g:DoxygenToolkit_licenseTag.="it under the terms of the GNU General Public License as published by<N>"
 ...
 ```
 
-### `g:DoxygenToolkit_versionString = ""`
+### `g:DoxygenToolkit_versionString=""`
 Defines version string.
+
 If not set, `@version` will not appear in `:DoxAuthor` output.
-Example:
-`:let g:DoxygenToolkit_versionString = "1.0"`
 
-### `g:DoxygenToolkit_putFilename = 0`
-Whether to put current file name after `@file`.
-Basically it's better to let *doxygen* figure out what the file name is by not putting it there.
 Example:
-`:let g:DoxygenToolkit_putFilename = 1`
-
-### `g:DoxygenToolkit_commentType = "C"`
-This variable only has two valid values: `C` or `C++`.
-If it equals to `C`, C-style comments will be used, like `/** ... */`. This is the default.
-If it equals to `C++`, C++-style comments will be used, like `///`.
-Example:
-`:let g:DoxygenToolkit_commentType = "C++"`
-C style comments:
+```{.vim}
+:let g:DoxygenToolkit_versionString="1.0"
 ```
+
+### `g:DoxygenToolkit_putFilename=0`
+Whether to put current file name after `@file`.
+
+Basically it's better to let *doxygen* figure out what the file name is by not putting it there.
+
+Example:
+```{.vim}
+:let g:DoxygenToolkit_putFilename=1
+```
+
+### `g:DoxygenToolkit_commentType="C"`
+This variable only has two valid values: `C` or `C++`.
+
+If it equals to `C`, C-style comments will be used, like `/** ... */`. This is the default.
+
+If it equals to `C++`, C++-style comments will be used, like `///`.
+
+Example:
+```{.vim}
+:let g:DoxygenToolkit_commentType="C++"
+```
+C style comments:
+```{.c}
 /**
  * @brief
  * @param count
@@ -186,7 +220,7 @@ C style comments:
 void resize(size_type count, value_type val = 0){
 ```
 C++ style comments:
-```
+```{.cpp}
 /// @brief
 /// @param count
 /// @param val

@@ -227,4 +227,4 @@ C++ style comments:
 void resize(size_type count, value_type val = 0){
 ```
 
-To find out more configurations, see the `g:DoxygenToolkit_XXX` variables in the script's source. These variables can be set in `.vimrc`.
+To find more configurations, see the `g:DoxygenToolkit_XXX` variables in the script's source. These variables can be set in `.vimrc`.
